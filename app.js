@@ -54,7 +54,7 @@ router.post("/new", (ctx, next) => {
     fastAnimals.push({
       id: ctx.request.body.id,
       name: ctx.request.body.name,
-      author: ctx.request.body.speed,
+      speed: ctx.request.body.speed,
     });
     ctx.response.status = 201;
     ctx.body = `New animal added with id: ${ctx.request.body.id} and name: ${ctx.request.body.name}`;
@@ -62,8 +62,44 @@ router.post("/new", (ctx, next) => {
   next();
 });
 
-// Creating an object with curl:
-// curl -X POST --data "id=10&name=Skata&speed=10%20mph" http://localhost:3000/fastest-animals/new
+// creating an object with curl:
+// curl -X POST --data "id={id}&name={name}&speed={speed}" http://localhost:3000/fastest-animals/new
+
+router.put("/update", (ctx, next) => {
+  if (
+    !ctx.request.body.id ||
+    !ctx.request.body.name ||
+    !ctx.request.body.speed
+  ) {
+    ctx.response.status = 400;
+    ctx.body = "Please enter the data";
+  } else {
+    const existingAnimal = fastAnimals.find(
+      (animal) => animal.id == ctx.request.body.id
+    );
+    if (existingAnimal) {
+      fastAnimals[existingAnimal.id] = {
+        id: ctx.request.body.id,
+        name: ctx.request.body.name,
+        speed: ctx.request.body.speed,
+      };
+      ctx.response.status = 201;
+      ctx.body = `Animal with id: ${ctx.request.body.id} was updated ${existingAnimal.id}`;
+    } else {
+      fastAnimals.push({
+        id: ctx.request.body.id,
+        name: ctx.request.body.name,
+        speed: ctx.request.body.speed,
+      });
+      ctx.response.status = 201;
+      ctx.body = `New animal added with id: ${ctx.request.body.id} and name: ${ctx.request.body.name}`;
+    }
+  }
+  next();
+});
+
+// updating an object with curl:
+// curl -X PUT --data "id={id}&name={name}&speed={speed}" http://localhost:3000/fastest-animals/update
 
 router.delete("/remove/:id", (ctx, next) => {
   const removeIndex = fastAnimals
@@ -80,8 +116,8 @@ router.delete("/remove/:id", (ctx, next) => {
   next();
 });
 
-// Deleting an object with curl:
-// curl -X DELETE --data http://localhost:3000/fastest-animals/remove/id
+// deleting an object with curl:
+// curl -X DELETE --data http://localhost:3000/fastest-animals/remove/{id}
 
 // invoke routes
 app.use(router.routes());
