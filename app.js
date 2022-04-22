@@ -25,7 +25,7 @@ router.get("/", (ctx, next) => {
 });
 
 router.get("/:id", (ctx, next) => {
-  let getCurrentAnimal = fastAnimals.filter(function (animal) {
+  let getCurrentAnimal = fastAnimals.filter((animal) => {
     if (animal.id == ctx.params.id) {
       return true;
     }
@@ -47,8 +47,11 @@ router.post("/new", (ctx, next) => {
   ) {
     ctx.response.status = 400;
     ctx.body = "Please enter the data";
+  } else if (fastAnimals.find((animal) => animal.id == ctx.request.body.id)) {
+    ctx.response.status = 400;
+    ctx.body = "The id already exists, please enter another one.";
   } else {
-    let newAnimal = fastAnimals.push({
+    fastAnimals.push({
       id: ctx.request.body.id,
       name: ctx.request.body.name,
       author: ctx.request.body.speed,
@@ -59,8 +62,26 @@ router.post("/new", (ctx, next) => {
   next();
 });
 
-// Try making a post with curl: 
+// Creating an object with curl:
 // curl -X POST --data "id=10&name=Skata&speed=10%20mph" http://localhost:3000/fastest-animals/new
+
+router.delete("/remove/:id", (ctx, next) => {
+  const removeIndex = fastAnimals
+    .map((animal) => animal.id)
+    .indexOf(parseInt(ctx.params.id, 10));
+  if (removeIndex === -1) {
+    ctx.response.status = 400;
+    ctx.body = `The id does not exist, please enter another one. ${ctx.params.id}`;
+  } else {
+    ctx.response.status = 201;
+    fastAnimals.splice(removeIndex, 1);
+    ctx.body = `Animal with id: ${ctx.params.id} was removed`;
+  }
+  next();
+});
+
+// Deleting an object with curl:
+// curl -X DELETE --data http://localhost:3000/fastest-animals/remove/id
 
 // invoke routes
 app.use(router.routes());
