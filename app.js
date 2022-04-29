@@ -2,12 +2,32 @@ const Koa = require("koa");
 const body = require("koa-body");
 const Router = require("koa-router");
 
-let fastAnimals = [
-  { id: 1, name: "Peregrine falcon", speed: "240 mph" },
-  { id: 2, name: "Golden eagle", speed: "200 mph" },
-  { id: 3, name: "White-throated needletail swift", speed: "106 mph" },
-  { id: 4, name: "Mexican free-tailed bat", speed: "100 mph" },
-  { id: 5, name: "Rock dove", speed: "93 mph" },
+let notes = [
+  {
+    id: 1,
+    content:
+      "Lorem ipsum dolor sit amet. Qui galisum rerum sed tempora rerum et rerum cupiditate a dolorem corporis a aliquid obcaecati id amet dignissimos. Et quaerat molestiae est ipsa quia qui omnis quis rem laudantium ullam quo autem fuga non quia excepturi! Est Quis doloremque et ullam Quis in quidem asperiores qui tenetur voluptas et laborum mollitia aut exercitationem perspiciatis. Et sunt quas sed corporis quis sed dolore recusandae est enim rerum.",
+  },
+  {
+    id: 2,
+    content:
+      "Lorem ipsum dolor sit amet. Id quibusdam deserunt est voluptatibus soluta est molestiae culpa et quis adipisci eos eius illum sit placeat aliquam nam beatae deleniti. Aut excepturi numquam hic nemo iure est cumque perferendis et illum nisi non nulla consequatur non totam sunt! Eum voluptatibus atque aut pariatur voluptatum ut officia consequatur. Ut eligendi ipsa in dolorem neque sit consequatur dolor?",
+  },
+  {
+    id: 3,
+    content:
+      "Est facere itaque et esse officiis ut rerum quia. Ut consequatur quia ad dolorum iste vel mollitia inventore et aperiam aspernatur. Aut enim consequatur 33 numquam nemo id veniam fugit et necessitatibus mollitia? Qui amet ipsa et reiciendis assumenda id quam placeat qui velit officiis.",
+  },
+  {
+    id: 4,
+    content:
+      "Lorem ipsum dolor sit amet. Et mollitia error At quas molestiae eos repellat doloremque non reprehenderit placeat. Rem aspernatur molestiae id nihil autem ut obcaecati facere aut natus dicta aut voluptatibus vero qui voluptatem quia aut facilis velit? Sit sequi nisi aut voluptas sint a velit officiis. Aut magni dolore aut atque reiciendis sit repellat excepturi ut nemo odio 33 quam illum?",
+  },
+  {
+    id: 5,
+    content:
+      "Lorem ipsum dolor sit amet. Eos sunt laudantium et esse optio ut magni omnis et exercitationem excepturi ut omnis deleniti consectetur nemo eos quasi ratione. Et dolorem beatae et itaque sunt ad tempore totam eum repellat perspiciatis et numquam quis in mollitia nihil. Eum itaque iusto est aperiam voluptas eum laboriosam fugiat eos autem molestiae. Est tenetur officiis quo optio eveniet non necessitatibus optio in officiis quos ut ipsum consequatur et ullam molestiae.",
+  },
 ];
 
 const app = new Koa();
@@ -21,105 +41,92 @@ router.get("/", (ctx, next) => {
   next();
 });
 
-router.get("/fastest-animals", (ctx, next) => {
-  ctx.body = fastAnimals;
+router.get("/notes", (ctx, next) => {
+  ctx.body = notes;
   next();
 });
 
-router.get("/fastest-animals/:id", (ctx, next) => {
-  let getCurrentAnimal = fastAnimals.filter((animal) => {
-    if (animal.id == ctx.params.id) {
+router.get("/notes/:id", (ctx, next) => {
+  let getCurrentNote = notes.filter((note) => {
+    if (note.id == ctx.params.id) {
       return true;
     }
   });
-  if (getCurrentAnimal.length) {
-    ctx.body = getCurrentAnimal[0];
+  if (getCurrentNote.length) {
+    ctx.body = getCurrentNote[0];
   } else {
     ctx.response.status = 404;
-    ctx.body = "Animal not found;";
+    ctx.body = "Note not found;";
   }
   next();
 });
 
-router.post("/fastest-animals/new", (ctx, next) => {
-  if (
-    !ctx.request.body.id ||
-    !ctx.request.body.name ||
-    !ctx.request.body.speed
-  ) {
+router.post("/notes", (ctx, next) => {
+  if (!ctx.request.body.id || !ctx.request.body.content) {
     ctx.response.status = 400;
     ctx.body = "Please enter the data";
-  } else if (fastAnimals.find((animal) => animal.id == ctx.request.body.id)) {
+  } else if (notes.find((note) => note.id == ctx.request.body.id)) {
     ctx.response.status = 400;
     ctx.body = "The id already exists, please enter another one.";
   } else {
-    fastAnimals.push({
+    notes.push({
       id: ctx.request.body.id,
-      name: ctx.request.body.name,
-      speed: ctx.request.body.speed,
+      content: ctx.request.body.content,
     });
     ctx.response.status = 201;
-    ctx.body = `New animal added with id: ${ctx.request.body.id} and name: ${ctx.request.body.name}`;
+    ctx.body = `New note added with id: ${ctx.request.body.id}`;
   }
   next();
 });
 
 // creating an object with curl:
-// curl -X POST --data "id={id}&name={name}&speed={speed}" http://localhost:3000/fastest-animals/new
+// curl -X POST --data "id={id}&content={content}" http://localhost:3000/notes
 
-router.put("/fastest-animals/update", (ctx, next) => {
-  if (
-    !ctx.request.body.id ||
-    !ctx.request.body.name ||
-    !ctx.request.body.speed
-  ) {
+router.put("/notes", (ctx, next) => {
+  if (!ctx.request.body.id || !ctx.request.body.content) {
     ctx.response.status = 400;
     ctx.body = "Please enter the data";
   } else {
-    const existingAnimal = fastAnimals.find(
-      (animal) => animal.id == ctx.request.body.id
-    );
-    if (existingAnimal) {
-      fastAnimals[existingAnimal.id] = {
+    const existingNote = notes.find((note) => note.id == ctx.request.body.id);
+    if (existingNote) {
+      notes[existingNote.id] = {
         id: ctx.request.body.id,
-        name: ctx.request.body.name,
-        speed: ctx.request.body.speed,
+        content: ctx.request.body.content,
       };
       ctx.response.status = 201;
-      ctx.body = `Animal with id: ${ctx.request.body.id} was updated ${existingAnimal.id}`;
+      ctx.body = `Note with id: ${ctx.request.body.id} was updated ${existingNote.id}`;
     } else {
-      fastAnimals.push({
+      notes.push({
         id: ctx.request.body.id,
-        name: ctx.request.body.name,
-        speed: ctx.request.body.speed,
+        content: ctx.request.body.content,
       });
       ctx.response.status = 201;
-      ctx.body = `New animal added with id: ${ctx.request.body.id} and name: ${ctx.request.body.name}`;
+      ctx.body = `New note added with id: ${ctx.request.body.id}`;
     }
   }
   next();
 });
 
 // updating an object with curl:
-// curl -X PUT --data "id={id}&name={name}&speed={speed}" http://localhost:3000/fastest-animals/update
+// curl -X PUT --data "id={id}&content={content}" http://localhost:3000/notes
 
-router.delete("/fastest-animals/remove/:id", (ctx, next) => {
-  const removeIndex = fastAnimals
-    .map((animal) => animal.id)
+router.delete("/notes/:id", (ctx, next) => {
+  const removeIndex = notes
+    .map((note) => note.id)
     .indexOf(parseInt(ctx.params.id, 10));
   if (removeIndex === -1) {
     ctx.response.status = 400;
     ctx.body = `The id does not exist, please enter another one. ${ctx.params.id}`;
   } else {
     ctx.response.status = 201;
-    fastAnimals.splice(removeIndex, 1);
-    ctx.body = `Animal with id: ${ctx.params.id} was removed`;
+    notes.splice(removeIndex, 1);
+    ctx.body = `note with id: ${ctx.params.id} was removed`;
   }
   next();
 });
 
 // deleting an object with curl:
-// curl -X DELETE --data http://localhost:3000/fastest-animals/remove/{id}
+// curl -X DELETE --data http://localhost:3000/notes/remove/{id}
 
 // invoke routes
 app.use(router.routes());
