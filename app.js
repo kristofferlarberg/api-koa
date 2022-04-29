@@ -82,26 +82,30 @@ router.post("/notes", (ctx, next) => {
 // creating an object with curl:
 // curl -X POST --data "id={id}&content={content}" http://localhost:3000/notes
 
-router.put("/notes", (ctx, next) => {
-  if (!ctx.request.body.id || !ctx.request.body.content) {
+router.put("/notes/:id", (ctx, next) => {
+  if (!ctx.params.id || !ctx.request.body.content) {
     ctx.response.status = 400;
     ctx.body = "Please enter the data";
   } else {
-    const existingNote = notes.find((note) => note.id == ctx.request.body.id);
-    if (existingNote) {
-      notes[existingNote.id] = {
-        id: ctx.request.body.id,
-        content: ctx.request.body.content,
-      };
-      ctx.response.status = 201;
-      ctx.body = `Note with id: ${ctx.request.body.id} was updated ${existingNote.id}`;
-    } else {
+    var updateIndex = notes
+      .map((note) => {
+        return note.id;
+      })
+      .indexOf(parseInt(ctx.params.id));
+    if (updateIndex === -1) {
       notes.push({
-        id: ctx.request.body.id,
+        id: parseInt(ctx.params.id, 10),
         content: ctx.request.body.content,
       });
       ctx.response.status = 201;
-      ctx.body = `New note added with id: ${ctx.request.body.id}`;
+      ctx.body = `New note added with id: ${ctx.params.id}`;
+    } else {
+      notes[updateIndex] = {
+        id: parseInt(ctx.params.id, 10),
+        content: ctx.request.body.content,
+      };
+      ctx.response.status = 201;
+      ctx.body = `Note with id: ${ctx.params.id} was updated`;
     }
   }
   next();
