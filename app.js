@@ -2,15 +2,6 @@ const Koa = require("koa");
 const body = require("koa-body");
 const Router = require("koa-router");
 
-const app = new Koa();
-
-app.use(body());
-
-// setup routes
-const router = new Router({
-  prefix: "/fastest-animals",
-});
-
 let fastAnimals = [
   { id: 1, name: "Peregrine falcon", speed: "240 mph" },
   { id: 2, name: "Golden eagle", speed: "200 mph" },
@@ -19,12 +10,23 @@ let fastAnimals = [
   { id: 5, name: "Rock dove", speed: "93 mph" },
 ];
 
+const app = new Koa();
+app.use(body());
+
+// setup routes
+const router = new Router();
+
 router.get("/", (ctx, next) => {
+  ctx.body = "Hello world";
+  next();
+});
+
+router.get("/fastest-animals", (ctx, next) => {
   ctx.body = fastAnimals;
   next();
 });
 
-router.get("/:id", (ctx, next) => {
+router.get("/fastest-animals/:id", (ctx, next) => {
   let getCurrentAnimal = fastAnimals.filter((animal) => {
     if (animal.id == ctx.params.id) {
       return true;
@@ -39,7 +41,7 @@ router.get("/:id", (ctx, next) => {
   next();
 });
 
-router.post("/new", (ctx, next) => {
+router.post("/fastest-animals/new", (ctx, next) => {
   if (
     !ctx.request.body.id ||
     !ctx.request.body.name ||
@@ -65,7 +67,7 @@ router.post("/new", (ctx, next) => {
 // creating an object with curl:
 // curl -X POST --data "id={id}&name={name}&speed={speed}" http://localhost:3000/fastest-animals/new
 
-router.put("/update", (ctx, next) => {
+router.put("/fastest-animals/update", (ctx, next) => {
   if (
     !ctx.request.body.id ||
     !ctx.request.body.name ||
@@ -101,7 +103,7 @@ router.put("/update", (ctx, next) => {
 // updating an object with curl:
 // curl -X PUT --data "id={id}&name={name}&speed={speed}" http://localhost:3000/fastest-animals/update
 
-router.delete("/remove/:id", (ctx, next) => {
+router.delete("/fastest-animals/remove/:id", (ctx, next) => {
   const removeIndex = fastAnimals
     .map((animal) => animal.id)
     .indexOf(parseInt(ctx.params.id, 10));
