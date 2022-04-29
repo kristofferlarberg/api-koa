@@ -1,4 +1,8 @@
-# REST API with Koa
+# REST API
+
+## Description
+
+This is an exercise in creating a simple REST API for an online forum using Koa and MongoDB.
 
 ## Setup
 
@@ -7,7 +11,7 @@
 
 ## Good to know
 
-Koa requires node v7.6.0 or higher.
+Koa requires `node v7.6.0` or higher.
 
 ## Links
 
