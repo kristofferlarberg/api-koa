@@ -1,7 +1,6 @@
 const Router = require("koa-router");
 const Model = require("./models");
 
-// setup routes
 const router = new Router();
 
 router.get("/", (ctx, next) => {
@@ -11,8 +10,8 @@ router.get("/", (ctx, next) => {
 
 router.get("/notes", async (ctx, next) => {
   try {
-    const Notes = await Model.find();
-    ctx.body = Notes;
+    const notes = await Model.find();
+    ctx.body = notes;
   } catch (error) {
     ctx.response.status = 500;
     ctx.body = `${error}`;
@@ -22,76 +21,77 @@ router.get("/notes", async (ctx, next) => {
 
 router.get("/notes/:id", async (ctx, next) => {
   try {
-    const existingNote = await Model.find({ _id: ctx.params.id });
-    if (existingNote.length > 0) {
-      ctx.body = existingNote;
-    } else {
-      ctx.body = `Note with id ${ctx.params.id} was not found`;
-    }
+    ctx.body = await Model.find({ _id: ctx.params.id });
+    ctx.response.status = 200;
   } catch {
-    ctx.response.status = 500;
-    ctx.body = `${error}`;
+    ctx.response.status = 400;
+    ctx.body = `Note with id ${ctx.params.id} was not found`;
   }
   next();
 });
 
 router.post("/notes", async (ctx, next) => {
   try {
+    const note = new Model({
+      title: ctx.request.body.title,
+      content: ctx.request.body.content,
+    });
+    await note.save();
+    ctx.response.status = 201;
+    ctx.body = `New note added with title: ${ctx.request.body.title}`;
+  } catch (error) {
     if (!ctx.request.body.title || !ctx.request.body.content) {
       ctx.response.status = 400;
       ctx.body = "Please enter the data";
     } else {
-      const note = new Model({
-        title: ctx.request.body.title,
-        content: ctx.request.body.content,
-      });
-      note.save();
-      ctx.response.status = 201;
-      ctx.body = `New note added with title: ${ctx.request.body.title}`;
+      ctx.response.status = 500;
+      ctx.body = `${error}`;
     }
-  } catch (error) {
-    ctx.response.status = 500;
-    ctx.body = `${error}`;
   }
   next();
 });
 
-// todo: add try catch
 router.put("/notes/:id", async (ctx, next) => {
-  const note = new Model({
-    title: ctx.request.body.title,
-    content: ctx.request.body.content,
-  });
-  const existingNote = await Model.find({ _id: ctx.params.id });
-  if (!ctx.request.body.title || !ctx.request.body.content) {
-    ctx.response.status = 400;
-    ctx.body = "Please enter the data";
-  } else {
-    if (!existingNote) {
-      note.save();
-      ctx.response.status = 201;
-      ctx.body = `New note added with title: ${ctx.request.body.title}`;
-    } else {
+  try {
+    if (ctx.request.body.title && ctx.request.body.content) {
       await Model.findByIdAndUpdate(ctx.params.id, {
         title: ctx.request.body.title,
         content: ctx.request.body.content,
       });
       ctx.response.status = 200;
       ctx.body = `Note with title: "${ctx.request.body.title}" was updated`;
+    } else {
+      throw new Error("Data is missing");
+    }
+  } catch (error) {
+    if (error.message === "Data is missing") {
+      ctx.response.status = 400;
+      ctx.body = "Please enter data";
+    } else {
+      ctx.response.status = 400;
+      ctx.body = `Note with id ${ctx.params.id} was not found`;
     }
   }
   next();
 });
 
-// todo: not working properly
 router.delete("/notes/:id", async (ctx, next) => {
   try {
-    await Model.findByIdAndRemove(ctx.params.id);
-    ctx.response.status = 200;
-    ctx.body = `Note with id ${ctx.params.id} was removed.`;
-  } catch {
-    ctx.response.status = 400;
-    ctx.body = `Note with id ${ctx.params.id} does not exist.`;
+    const existingNote = await Model.find({ _id: ctx.params.id });
+    // todo: exists because findByIdAndDelete runs even if element has beendeleted
+    if (existingNote.length > 0) {
+      // todo: why is findByIdAndDelete running even if element has been deleted?
+      await Model.deleteOne({ _id: ctx.params.id });
+      ctx.body = `Note with id ${ctx.params.id} was removed.`;
+    } else {
+      throw new Error("Not found");
+    }
+  } catch (error) {
+    if (error.message === "Not found") {
+      ctx.body = `Note with id ${ctx.params.id} was not found`;
+    } else {
+      ctx.body = `${error}`;
+    }
   }
   next();
 });
