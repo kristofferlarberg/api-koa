@@ -96,4 +96,20 @@ router.delete("/notes/:id", async (ctx, next) => {
   next();
 });
 
+router.delete("/notes", async (ctx, next) => {
+  try {
+    const existingNotes = await Model.find({});
+    if (existingNotes.length > 0) {
+      await Model.deleteMany({});
+      ctx.body = "All notes were removed";
+    } else {
+      throw new Error("No notes found, nothing to erase");
+    }
+  } catch (error) {
+    ctx.response.status = 500;
+    ctx.body = `${error}`;
+  }
+  next();
+});
+
 module.exports = router;
