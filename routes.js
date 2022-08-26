@@ -83,9 +83,9 @@ router.put("/notes/:id", async (ctx, next) => {
 router.delete("/notes/:id", async (ctx, next) => {
   try {
     const existingNote = await Model.find({ _id: ctx.params.id });
-    // todo: exists because findByIdAndDelete runs even if element has beendeleted
+    // if statement exists because deleteOne runs even if element has been deleted
+    // why is deleteOne running even if element has been deleted?
     if (existingNote.length > 0) {
-      // todo: why is findByIdAndDelete running even if element has been deleted?
       await Model.deleteOne({ _id: ctx.params.id });
       ctx.body = `Note with id ${ctx.params.id} was removed.`;
     } else {
