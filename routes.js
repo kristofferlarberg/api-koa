@@ -10,8 +10,13 @@ router.get("/", (ctx, next) => {
 
 router.get("/notes", async (ctx, next) => {
   try {
-    const notes = await Model.find();
-    ctx.body = notes;
+    const existingNotes = await Model.find({});
+    if (existingNotes.length > 0) {
+      const notes = await Model.find();
+      ctx.body = notes;
+    } else {
+      throw new Error("No notes found");
+    }
   } catch (error) {
     ctx.response.status = 500;
     ctx.body = `${error}`;
