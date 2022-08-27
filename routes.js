@@ -1,5 +1,7 @@
 const Router = require("koa-router");
 const Model = require("./models");
+require("./services/cloudinary.config");
+const upload = require("./services/multer");
 
 const router = new Router();
 
@@ -113,6 +115,28 @@ router.delete("/notes", async (ctx, next) => {
   } catch (error) {
     ctx.response.status = 500;
     ctx.body = `${error}`;
+  }
+  next();
+});
+
+router.post("/notes/image", async (ctx, next) => {
+  try {
+    upload.single("image");
+    const note = new Model({
+      title: ctx.request.body.title,
+      content: ctx.request.file.url,
+    });
+    await note.save();
+    ctx.response.status = 201;
+    ctx.body = `New image added with id: ${ctx.params.id}`;
+  } catch (error) {
+    if (!ctx.request.body.title || !ctx.request.body.content) {
+      ctx.response.status = 400;
+      ctx.body = "Please enter the data";
+    } else {
+      ctx.response.status = 500;
+      ctx.body = `${error}`;
+    }
   }
   next();
 });
